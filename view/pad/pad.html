@@ -184,7 +184,7 @@ var select = function (id) {
             }
             $('.bootbox-close-button').click()
             unSelectAll();
-            padArray = [0];
+            padArray = [];
             padTable.fnClearTable(0);
             padTable.fnDraw();
         }
@@ -365,7 +365,7 @@ $(document).ready(function () {
                                         bootbox.alert(data.message, null);
                                     }
                                     unSelectAll();
-                                    padArray = [0];
+                                    padArray = [];
                                     padTable.fnClearTable(0);
                                     padTable.fnDraw();
                                 }
