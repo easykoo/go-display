@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="keywords" content="{{.Session.Settings.Keywords}}">
+    <meta name="description" content="{{.Session.Settings.Description}}">
+    <link rel="shortcut icon" href="/img/favicon.ico">
+
+    <title>{{tsl .Session.Lang "label.picture"}} - {{.Session.Settings.AppName}}</title>
+
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/css/font-awesome.min.css" rel="stylesheet">
+    <link href="/css/dataTables.bootstrap.css" rel="stylesheet">
+    <link href="/css/admin.css" rel="stylesheet">
+
+    <!--[if lt IE 9]>
+    <script src="/js/html5shiv.min.js"></script>
+    <script src="/js/respond.min.js"></script>
+    <![endif]-->
+
+    <script src="/js/jquery-1.10.2.min.js"></script>
+</head>
+
+<body>
+<div id="wrapper">
+    {{template "layout/nav" .}}
+    {{template "layout/left" .}}
+
+    <div id="page-wrapper">
+        <div class="row">
+            <div class="col-lg-12">
+                <h1 class="page-header">
+                    {{if .Response.Picture}}
+                    {{tsl .Session.Lang "label.edit"}}
+                    {{else}}
+                    {{tsl .Session.Lang "label.new"}}
+                    {{end}}
+                </h1>
+            </div>
+            <!-- /.col-lg-12 -->
+        </div>
+        {{template "layout/message" .}}
+        <div class="row">
+            <div class="col-lg-12">
+                <form id="pictureForm" role="form" class="form-horizontal" method="post"
+                      enctype="multipart/form-data"
+                {{if .Response.Picture}}action="/picture/edit"{{else}} action="/picture/new"{{end}} >
+
+                <input type="text" name="pictureId" value="{{.Response.Picture.Id}}" hidden>
+                <input type="text" name="version" value="{{.Response.Picture.Version}}" hidden>
+
+                <div class="form-group">
+                    <div id="image" class="col-sm-offset-2 col-sm-4">
+                        {{with .Response.Picture}}
+                        <img style="max-width:600px;max-height:600px" src="{{.Url}}" class="img-thumbnail"/>
+                        {{end}}
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="url" class="col-sm-2 control-label">
+                        <span style="color: red">*</span>
+                        {{tsl .Session.Lang "label.picture"}}
+                    </label>
+
+                    <div class="col-sm-4">
+                        <div class="input-group">
+                        <input type="text" id="url" name="url" class="form-control disabled" value="{{.Response.Picture.Url}}" >
+      <span class="input-group-btn">
+                        <button type="button" class="btn btn-default " onclick="upload()">
+                            {{tsl .Session.Lang "label.upload"}}
+                        </button>
+          </span>
+                            </div>
+                    </div>
+                    <div class="col-sm-6 control-label" style="text-align: left"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="name" class="col-sm-2 control-label">
+                        <span style="color: red">*</span>
+                        {{tsl .Session.Lang "label.name"}}
+                    </label>
+
+                    <div class="col-sm-4">
+                        <input type="text" id="name" class="form-control" name="name"
+                               value="{{.Response.Picture.Name}}">
+                    </div>
+                    <div class="col-sm-6 control-label" style="text-align: left"></div>
+                </div>
+                <div class="form-group">
+                    <label for="description" class="col-sm-2 control-label">
+                        {{tsl .Session.Lang "label.description"}}
+                    </label>
+
+                    <div class="col-sm-4">
+                        <input type="text" id="description" class="form-control" name="description"
+                               value="{{.Response.Picture.Description}}">
+                    </div>
+                    <div class="col-sm-6 control-label" style="text-align: left"></div>
+                </div>
+                <div class="form-group">
+                    <div class="col-sm-offset-2 col-sm-4">
+                        {{if .Response.Picture}}
+                        <button type="submit" class="btn btn-success">
+                            {{tsl .Session.Lang "label.change"}}
+                        </button>
+                        {{else}}
+                        <button type="submit" class="btn btn-success">
+                            {{tsl .Session.Lang "label.add"}}
+                        </button>
+                        {{end}}
+                        <a class="btn btn-default" href="/picture">
+                            {{tsl .Session.Lang "label.cancel"}}
+                        </a>
+                    </div>
+                </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Core Scripts - Include with every page -->
+<script src="/js/bootstrap.min.js"></script>
+<script src="/js/jquery.upload.js"></script>
+<script src="/js/jquery.validate.min.js"></script>
+<script src="/js/jquery.validate.method.js"></script>
+<script src="/js/jquery.metisMenu.js"></script>
+<script src="/js/admin.js"></script>
+<script src="/js/easykoo.js"></script>
+
+
+<script type="text/javascript">
+    var upload = function () {
+        $.upload({
+            url: '/picture/upload',
+            fileName: 'image',
+            dataType: 'json',
+            onSend: function () {
+                return true;
+            },
+            onComplate: function (data) {
+                $('#image').empty();
+                var image = '<img style="max-width:600px;max-height:600px" src="' + data.url + '" class="img-thumbnail"/>'
+                $('#image').append(image);
+                $('#url').val(data.url);
+            }
+        });
+    }
+
+    $(document).ready(function () {
+        $('#picture').toggleClass('active').children('ul').collapse('toggle');
+        $('#changePicture').css({"background": "#DDDDDD"});
+
+        $("#pictureForm").validate({
+            rules: {
+                name: {
+                    required: true
+                },
+                url: {
+                    required: true
+                }
+            },
+            focusInvalid: true,
+            onkeyup: false,
+            errorClass: "error",
+            errorPlacement: function (error, element) {
+                if (element.attr("name") == "url") {
+//                    error.appendTo($(".gender"));
+                    error.appendTo(element.parent("div").parent('div').next("div"));
+                } else
+                error.appendTo(element.parent("div").next("div"));
+            },
+            highlight: function (element, errorClass) {
+                if ($(element).attr("name") == "url") {
+                    $(element).parent("div").parent("div").parent("div").addClass("has-error").removeClass("has-success");
+                } else
+                $(element).parent("div").parent("div").addClass("has-error").removeClass("has-success");
+            },
+            success: function (label) {
+                label.parent("div").parent("div").removeClass("has-error").addClass("has-success");
+            },
+            submitHandler: function (form) {
+                form.submit();
+                return false;
+            }
+        });
+    })
+</script>
+</body>
+</html>

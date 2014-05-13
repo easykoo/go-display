@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="keywords" content="{{.Session.Settings.Keywords}}">
+    <meta name="description" content="{{.Session.Settings.Description}}">
+    <link rel="shortcut icon" href="/img/favicon.ico">
+
+    <title>{{tsl .Session.Lang "label.pad"}} - {{.Session.Settings.AppName}}</title>
+
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/css/font-awesome.min.css" rel="stylesheet">
+    <link href="/css/dataTables.bootstrap.css" rel="stylesheet">
+    <link href="/css/admin.css" rel="stylesheet">
+
+    <!--[if lt IE 9]>
+    <script src="/js/html5shiv.min.js"></script>
+    <script src="/js/respond.min.js"></script>
+    <![endif]-->
+
+    <script src="/js/jquery-1.10.2.min.js"></script>
+</head>
+
+<body>
+<div id="wrapper">
+    {{template "layout/nav" .}}
+    {{template "layout/left" .}}
+
+    <div id="page-wrapper">
+        <div class="row">
+            <div class="col-lg-12">
+                <h1 class="page-header">
+                    {{if .Response.Pad}}
+                    {{tsl .Session.Lang "label.edit"}}
+                    {{else}}
+                    {{tsl .Session.Lang "label.new"}}
+                    {{end}}
+                </h1>
+            </div>
+            <!-- /.col-lg-12 -->
+        </div>
+        {{template "layout/message" .}}
+        <div class="row">
+            <div class="col-lg-12">
+                <form id="padForm" role="form" class="form-horizontal" method="post"
+                      enctype="multipart/form-data"
+                {{if .Response.Pad}}action="/pad/edit"{{else}} action="/pad/new"{{end}} >
+
+                <input type="text" name="padId" value="{{.Response.Pad.Id}}" hidden>
+                <input type="text" name="version" value="{{.Response.Pad.Version}}" hidden>
+
+                <div class="form-group">
+                    <label for="name" class="col-sm-2 control-label">
+                        <span style="color: red">*</span>
+                        {{tsl .Session.Lang "label.name"}}
+                    </label>
+
+                    <div class="col-sm-4">
+                        <input type="text" id="name" name="name" class="form-control"
+                               value="{{.Response.Pad.Name}}">
+                    </div>
+                    <div class="col-sm-6 control-label" style="text-align: left"></div>
+                </div>
+                <div class="form-group">
+                    <label for="ip" class="col-sm-2 control-label">
+                        <span style="color: red">*</span>
+                        {{tsl .Session.Lang "label.ip"}}
+                    </label>
+
+                    <div class="col-sm-4">
+                        <input type="text" id="ip" name="ip" class="form-control"
+                               value="{{.Response.Pad.Ip}}">
+                    </div>
+                    <div class="col-sm-6 control-label" style="text-align: left"></div>
+                </div>
+                <div class="form-group">
+                    <label for="description" class="col-sm-2 control-label">
+                        {{tsl .Session.Lang "label.description"}}
+                    </label>
+
+                    <div class="col-sm-4">
+                        <input type="text" id="description" class="form-control" name="description"
+                               value="{{.Response.Pad.Description}}">
+                    </div>
+                    <div class="col-sm-6 control-label" style="text-align: left"></div>
+                </div>
+                <div class="form-group">
+                    <div class="col-sm-offset-2 col-sm-4">
+                        {{if .Response.Pad}}
+                        <button type="submit" class="btn btn-success">
+                            {{tsl .Session.Lang "label.change"}}
+                        </button>
+                        {{else}}
+                        <button type="submit" class="btn btn-success">
+                            {{tsl .Session.Lang "label.add"}}
+                        </button>
+                        {{end}}
+                        <a class="btn btn-default" href="/pad">
+                            {{tsl .Session.Lang "label.cancel"}}
+                        </a>
+                    </div>
+                </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Core Scripts - Include with every page -->
+<script src="/js/bootstrap.min.js"></script>
+<script src="/js/jquery.upload.js"></script>
+<script src="/js/jquery.validate.min.js"></script>
+<script src="/js/jquery.validate.method.js"></script>
+<script src="/js/jquery.metisMenu.js"></script>
+<script src="/js/admin.js"></script>
+<script src="/js/easykoo.js"></script>
+
+
+<script type="text/javascript">
+    var upload = function () {
+        $.upload({
+            url: '/pad/upload',
+            fileName: 'image',
+            dataType: 'json',
+            onSend: function () {
+                return true;
+            },
+            onComplate: function (data) {
+                $('#image').empty();
+                var image = '<img style="max-width:600px;max-height:600px" src="' + data.url + '" class="img-thumbnail"/>'
+                $('#image').append(image);
+                $('#url').val(data.url);
+            }
+        });
+    }
+
+    $(document).ready(function () {
+        $('#pad').toggleClass('active').children('ul').collapse('toggle');
+        $('#changePad').css({"background": "#DDDDDD"});
+
+        $("#padForm").validate({
+            rules: {
+                name: {
+                    required: true
+                },
+                ip: {
+                    required: true,
+                    ip:true
+                }
+            },
+            focusInvalid: true,
+            onkeyup: false,
+            errorClass: "error",
+            errorPlacement: function (error, element) {
+                error.appendTo(element.parent("div").next("div"));
+            },
+            highlight: function (element, errorClass) {
+                $(element).parent("div").parent("div").addClass("has-error").removeClass("has-success");
+            },
+            success: function (label) {
+                label.parent("div").parent("div").removeClass("has-error").addClass("has-success");
+            },
+            submitHandler: function (form) {
+                form.submit();
+                return false;
+            }
+        });
+    })
+</script>
+</body>
+</html>
