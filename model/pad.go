@@ -14,6 +14,7 @@ type Pad struct {
 	Name        string    `form:"name" xorm:"varchar(20) not null"`
 	Ip          string    `form:"ip" xorm:"varchar(15) not null"`
 	Picture     Picture   `json:"picture_id" xorm:"picture_id int(11) default null"`
+	Color       string    `form:"color" xorm:"varchar(20) not null"`
 	Description string    `form:"description" xorm:"varchar(100) not null"`
 	CreateUser  string    `xorm:"varchar(20) default 'SYSTEM'"`
 	CreateDate  time.Time `xorm:"datetime created"`
@@ -34,9 +35,9 @@ func (self *Pad) Get() (*Pad, error) {
 }
 
 func (self *Pad) GetByIp() (*Pad, error) {
-	pad := &Pad{}
-	_, err := orm.Get(pad)
-	return pad, err
+	//pad := &Pad{}
+	_, err := orm.Get(self)
+	return self, err
 }
 
 func (self *Pad) Insert() error {
@@ -89,11 +90,11 @@ func (self *Pad) ChoosePicture(padArray []Pad) error {
 }
 
 func (self *Pad) ChoosePicture1(array []int, pictureId int) error {
-	sql:="update pad set picture_id ="+ IntString(pictureId) + " where id in ("
-	for i:=0; i<len(array);i++{
+	sql := "update pad set picture_id =" + IntString(pictureId) + " where id in ("
+	for i := 0; i < len(array); i++ {
 		sql += IntString(array[i])
-		if i < len(array) -1 {
-			sql+=","
+		if i < len(array)-1 {
+			sql += ","
 		}
 	}
 	sql += ")"

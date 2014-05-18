@@ -101,6 +101,7 @@ CREATE TABLE `pad` (
   ip          VARCHAR(15)  NOT NULL,
   name        VARCHAR(20)  NOT NULL,
   picture_id  INT(11) DEFAULT NULL,
+  color VARCHAR(20) NULL,
   description VARCHAR(100) NULL,
   create_user VARCHAR(20) DEFAULT NULL,
   create_date DATETIME DEFAULT NULL,

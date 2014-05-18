@@ -90,12 +90,12 @@ func ChoosePicture(ctx *middleware.Context) {
 	ctx.JSON(200, ctx.Response)
 }
 
-func GetPicture(ctx *middleware.Context) {
+func Info(ctx *middleware.Context) {
 	ip := GetRemoteIp(ctx.R)
 	pad := new(model.Pad)
 	pad.Ip = ip
-	pic, err := pad.GetByIp()
+	pad, err := pad.GetByIp()
 	PanicIf(err)
 	ctx.Set("success", true)
-	ctx.JSON(200, pic)
+	ctx.JSON(200, pad)
 }

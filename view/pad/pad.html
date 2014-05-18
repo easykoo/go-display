@@ -303,6 +303,14 @@ var getAllPad = function () {
         "fnRowCallback": function (nRow, aData, iDisplayIndex) {
             var img = '<img onclick="selectOne(' + aData.Id + ')" style="height:100px; cursor:pointer" src="' + aData.picture_id.Url + '"/>'
             $('td:eq(2)', nRow).html(img);
+			
+			var desc = '<span style="color:'+aData.Color+';';
+			if (aData.Color == 'white'){				
+                desc+='background-color:gray';
+			}
+			desc+='">'+aData.Description+'</span>';
+            $('td:eq(5)', nRow).html(desc);
+			
 
             var html = '<div class="btn-group"><a class="btn btn-primary" href="javascript:"><i class="fa fa-gavel fa-fw"></i></a>' +
                     '<a class="btn btn-primary dropdown-toggle" data-toggle="dropdown" href="javascript:"><span class="fa fa-caret-down"></span></a>' +
