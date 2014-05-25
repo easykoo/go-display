@@ -60,7 +60,7 @@
                                     <th>{{tsl .Session.Lang "label.name"}}</th>
                                     <th>{{tsl .Session.Lang "label.ip"}}</th>
                                     <th>{{tsl .Session.Lang "label.description"}}</th>
-                                    <th>{{tsl .Session.Lang "label.create.date"}}</th>
+                                    <!--<th>{{tsl .Session.Lang "label.create.date"}}</th>-->
                                     <th>{{tsl .Session.Lang "label.actions"}}</th>
                                 </tr>
                                 </thead>
@@ -141,14 +141,11 @@ var showPicture = function (data) {
 
     $.each(data.aaData, function (index, obj) {
         if (index == 0) {
-            html += '<div class="item active">';
+            html += '<div class="item active" style="align:center">';
         } else {
             html += '<div class="item">';
         }
-        html += '<img src="' + obj.Url + '" alt="...">'
-                + '<div class="carousel-caption">'
-                + '<a class="btn btn-success" href="javascript:select(' + obj.Id + ')">选择</a>'
-                + '</div>'
+        html += '<img src="' + obj.Url + '" style="cursor:pointer" onclick="select('+obj.Id+')"> '
                 + '</div>'
 
     });
@@ -280,7 +277,7 @@ var getAllPad = function () {
                 },
                 "sWidth": 10
             },
-            {"mData": "Id", "sWidth": 20},
+            {"mData": "Id", "sWidth": 30},
             { "mData": "picture_id",
                 "sWidth": 150
             },
@@ -292,18 +289,22 @@ var getAllPad = function () {
                 },
                 "sWidth": 300
             },
-            { "mData": "CreateDate",
+            /*{ "mData": "CreateDate",
                 "mRender": function (mData) {
                     return formatTime(mData)
                 },
                 "sWidth": 160
-            },
+            },*/
             { "mData": "Id", "sWidth": 70}
         ],
         "fnRowCallback": function (nRow, aData, iDisplayIndex) {
-            var img = '<img onclick="selectOne(' + aData.Id + ')" style="height:100px; cursor:pointer" src="' + aData.picture_id.Url + '"/>'
-            $('td:eq(2)', nRow).html(img);
-			
+			var img;
+			if (aData.picture_id.Url!=""){
+            	img = '<img onclick="selectOne(' + aData.Id + ')" style="height:100px; cursor:pointer" src="' + aData.picture_id.Url + '"/>'
+         	} else {
+				img = '<button onclick="selectOne('+aData.Id + ')" class="btn btn-primary">选择图片</button>'
+			}
+			$('td:eq(2)', nRow).html(img);
 			var desc = '<span style="color:'+aData.Color+';';
 			if (aData.Color == 'white'){				
                 desc+='background-color:gray';
@@ -322,7 +323,7 @@ var getAllPad = function () {
                     + '<strong> {{tsl .Session.Lang "label.edit"}}</strong>'
                     + '</a></li>';
             html += '</ul></div>';
-            $('td:eq(7)', nRow).html(html);
+            $('td:eq(6)', nRow).html(html);
 
             if (aData.Viewed) {
                 $(nRow).css({"color": "#BBBBBB"})
