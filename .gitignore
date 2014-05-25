@@ -213,6 +213,6 @@ pip-log.txt
 
 #Mr Developer
 .mr.developer.cfg
-
-*.exe
+go-display
+go-display.exe
 public/pictures/
