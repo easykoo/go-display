@@ -139,7 +139,7 @@ func main() {
 		r.Any("/edit/:id", AuthRequest(Module_Picture), handler.EditPadView)
 		r.Any("/edit", AuthRequest(Module_Picture), binding.Bind(model.Pad{}), handler.EditPad)
 		r.Any("/choosePicture", AuthRequest(Module_Picture), handler.ChoosePicture)
-		r.Any("/info", handler.Info)
+		r.Any("/:name/info", handler.Info)
 	})
 
 	Log.Info("server is started...")

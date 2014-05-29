@@ -12,7 +12,6 @@ import (
 type Pad struct {
 	Id          int       `form:"padId" xorm:"int(11) pk not null autoincr"`
 	Name        string    `form:"name" xorm:"varchar(20) not null"`
-	Ip          string    `form:"ip" xorm:"varchar(15) not null"`
 	Picture     Picture   `json:"picture_id" xorm:"picture_id int(11) default null"`
 	Color       string    `form:"color" xorm:"varchar(20) not null"`
 	Description string    `form:"description" xorm:"varchar(100) not null"`
@@ -28,15 +27,16 @@ func (self *Pad) Exist() (bool, error) {
 	return orm.Get(self)
 }
 
-func (self *Pad) Get() (*Pad, error) {
+func (self *Pad) GetById() (*Pad, error) {
 	pad := &Pad{}
 	_, err := orm.Id(self.Id).Get(pad)
 	return pad, err
 }
-
-func (self *Pad) GetByIp() (*Pad, error) {
-	//pad := &Pad{}
-	_, err := orm.Get(self)
+func (self *Pad) Get() (*Pad, error) {
+	exist, err := orm.Get(self)
+	if !exist {
+		return nil, err
+	}
 	return self, err
 }
 

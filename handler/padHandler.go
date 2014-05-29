@@ -46,7 +46,7 @@ func EditPadView(ctx *middleware.Context, params martini.Params) {
 	id := params["id"]
 	pad := new(model.Pad)
 	pad.Id = ParseInt(id)
-	pic, err := pad.Get()
+	pic, err := pad.GetById()
 	PanicIf(err)
 	ctx.Set("Pad", pic)
 	ctx.HTML(200, "pad/edit", ctx)
@@ -90,12 +90,19 @@ func ChoosePicture(ctx *middleware.Context) {
 	ctx.JSON(200, ctx.Response)
 }
 
-func Info(ctx *middleware.Context) {
-	ip := GetRemoteIp(ctx.R)
+func Info(ctx *middleware.Context, params martini.Params) {
 	pad := new(model.Pad)
-	pad.Ip = ip
-	pad, err := pad.GetByIp()
+	name := params["name"]
+	pad.Name = name
+	pad, err := pad.Get()
 	PanicIf(err)
-	ctx.Set("success", true)
-	ctx.JSON(200, pad)
+	if pad == nil {
+		ctx.Set("success", false)
+		ctx.Set("message", "Pad not exists!")
+		ctx.JSON(200, ctx.Response)
+	} else {
+		ctx.Set("success", true)
+		ctx.Set("Pad", pad)
+		ctx.JSON(200, ctx.Response)
+	}
 }

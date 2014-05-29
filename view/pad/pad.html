@@ -56,9 +56,8 @@
                                 <tr>
                                     <th><input type="checkbox" onchange='selectAll(this)' id="selectAll"/></th>
                                     <th>{{tsl .Session.Lang "label.id"}}</th>
-                                    <th>{{tsl .Session.Lang "label.image"}}</th>
                                     <th>{{tsl .Session.Lang "label.name"}}</th>
-                                    <th>{{tsl .Session.Lang "label.ip"}}</th>
+                                    <th>{{tsl .Session.Lang "label.image"}}</th>
                                     <th>{{tsl .Session.Lang "label.description"}}</th>
                                     <!--<th>{{tsl .Session.Lang "label.create.date"}}</th>-->
                                     <th>{{tsl .Session.Lang "label.actions"}}</th>
@@ -278,11 +277,10 @@ var getAllPad = function () {
                 "sWidth": 10
             },
             {"mData": "Id", "sWidth": 30},
+            { "mData": "Name", "sWidth": 80},
             { "mData": "picture_id",
                 "sWidth": 150
             },
-            { "mData": "Name", "sWidth": 80},
-            { "mData": "Ip", "sWidth": 80},
             { "mData": "Description",
                 "mRender": function (mData) {
                     return mData.length <= 50 ? mData : (mData.substr(0, 50) + '... ')
@@ -304,13 +302,13 @@ var getAllPad = function () {
          	} else {
 				img = '<button onclick="selectOne('+aData.Id + ')" class="btn btn-primary">选择图片</button>'
 			}
-			$('td:eq(2)', nRow).html(img);
+			$('td:eq(3)', nRow).html(img);
 			var desc = '<span style="color:'+aData.Color+';';
 			if (aData.Color == 'white'){				
                 desc+='background-color:gray';
 			}
 			desc+='">'+aData.Description+'</span>';
-            $('td:eq(5)', nRow).html(desc);
+            $('td:eq(4)', nRow).html(desc);
 			
 
             var html = '<div class="btn-group"><a class="btn btn-primary" href="javascript:"><i class="fa fa-gavel fa-fw"></i></a>' +
@@ -323,7 +321,7 @@ var getAllPad = function () {
                     + '<strong> {{tsl .Session.Lang "label.edit"}}</strong>'
                     + '</a></li>';
             html += '</ul></div>';
-            $('td:eq(6)', nRow).html(html);
+            $('td:eq(5)', nRow).html(html);
 
             if (aData.Viewed) {
                 $(nRow).css({"color": "#BBBBBB"})
