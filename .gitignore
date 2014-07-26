@@ -216,4 +216,7 @@ pip-log.txt
 
 *.exe
 public/pictures/
+go-display
+go-display.exe
+
 *.exe

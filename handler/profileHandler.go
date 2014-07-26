@@ -44,6 +44,36 @@ func LoginHandler(ctx *middleware.Context, formErr binding.Errors, loginUser mod
 	}
 }
 
+func LoginxHandler(ctx *middleware.Context, formErr binding.Errors, loginUser model.UserLoginForm) {
+	switch ctx.R.Method {
+	case "POST":
+		ctx.JoinFormErrors(formErr)
+		password := Md5(loginUser.Password)
+		user := &model.User{Username: loginUser.Username, Password: password}
+		if !ctx.HasError() {
+			if has, err := user.Exist(); has {
+				PanicIf(err)
+				if user.Locked {
+					ctx.Set("User", user)
+					ctx.AddError(Translate(ctx.S.Get("Lang").(string), "message.error.invalid.username.or.password"))
+					ctx.HTML(200, "user/login", ctx)
+					return
+				}
+				ctx.S.Set("SignedUser", user)
+				Log.Info(user.Username, " login")
+				ctx.JSON(200, user)
+			} else {
+				ctx.Set("User", user)
+				ctx.JSON(200, user)
+			}
+		} else {
+			ctx.HTML(200, "user/login", ctx)
+		}
+	default:
+		ctx.HTML(200, "user/login", ctx)
+	}
+}
+
 func RegisterHandler(ctx *middleware.Context, formErr binding.Errors, user model.UserRegisterForm) {
 	switch ctx.R.Method {
 	case "POST":

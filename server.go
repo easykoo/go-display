@@ -107,6 +107,7 @@ func main() {
 		r.Any("/role", AuthRequest(Module_User), handler.SetRole)
 		r.Any("/ban/:id", AuthRequest(Module_User), handler.BanUser)
 		r.Any("/lift/:id", AuthRequest(Module_User), handler.LiftUser)
+		r.Any("/loginx", binding.Form(model.UserLoginForm{}), handler.LoginxHandler)
 	})
 
 	m.Group("/profile", func(r martini.Router) {
@@ -139,7 +140,7 @@ func main() {
 		r.Any("/edit/:id", AuthRequest(Module_Picture), handler.EditPadView)
 		r.Any("/edit", AuthRequest(Module_Picture), binding.Bind(model.Pad{}), handler.EditPad)
 		r.Any("/choosePicture", AuthRequest(Module_Picture), handler.ChoosePicture)
-		r.Any("/info", handler.Info)
+		r.Any("/:name/info", handler.Info)
 	})
 
 	Log.Info("server is started...")

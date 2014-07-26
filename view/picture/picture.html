@@ -56,7 +56,7 @@
                                     <th>{{tsl .Session.Lang "label.image"}}</th>
                                     <th>{{tsl .Session.Lang "label.name"}}</th>
                                     <th>{{tsl .Session.Lang "label.description"}}</th>
-                                    <th>{{tsl .Session.Lang "label.create.date"}}</th>
+                                    <!--<th>{{tsl .Session.Lang "label.create.date"}}</th>-->
                                     <th>{{tsl .Session.Lang "label.actions"}}</th>
                                 </tr>
                                 </thead>
@@ -183,7 +183,7 @@ var getAllPicture = function () {
                 },
                 "sWidth": 10
             },
-            {"mData": "Id", "sWidth": 20},
+            {"mData": "Id", "sWidth": 30},
             { "mData": "Url",
                 "mRender": function (mData) {
                     return '<img style="height:100px" src="' + mData + '"/>'
@@ -197,12 +197,12 @@ var getAllPicture = function () {
                 },
                 "sWidth": 300
             },
-            { "mData": "CreateDate",
+            /*{ "mData": "CreateDate",
                 "mRender": function (mData) {
                     return formatTime(mData)
                 },
                 "sWidth": 160
-            },
+            },*/
             { "mData": "Id", "sWidth": 70}
         ],
         "fnRowCallback": function (nRow, aData, iDisplayIndex) {
@@ -217,7 +217,7 @@ var getAllPicture = function () {
                     + '<strong> {{tsl .Session.Lang "label.edit"}}</strong>'
                     + '</a></li>';
             html += '</ul></div>';
-            $('td:eq(6)', nRow).html(html);
+            $('td:eq(5)', nRow).html(html);
 
             if (aData.Viewed) {
                 $(nRow).css({"color": "#BBBBBB"})
