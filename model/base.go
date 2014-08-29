@@ -83,7 +83,7 @@ func SetEngine() *xorm.Engine {
 	PanicIf(err)
 	orm.TZLocation = time.Local
 	orm.ShowSQL = Cfg.MustBool("db", "show_sql", false)
-	orm.Logger = Log
+	orm.Logger = xorm.NewSimpleLogger(Log.GetWriter())
 	InitDB()
 	Log.Info("db initialized...")
 	return orm

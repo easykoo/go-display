@@ -51,7 +51,7 @@ func Upload(ctx *middleware.Context) {
 	defer f.Close()
 	PanicIf(err)
 	io.Copy(f, file)
-	Log.Debug("上传文件的大小为: %d", file.(Sizer).Size())
+	Log.Info("上传文件的大小为: %d", file.(Sizer).Size())
 	url := "/pictures/" + filename
 	ctx.Set("url", url)
 	ctx.JSON(200, ctx.Response)
