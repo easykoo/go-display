@@ -88,10 +88,20 @@ func DeletePicture(ctx *middleware.Context, params martini.Params) {
 	id := params["id"]
 	picture := new(model.Picture)
 	picture.Id = ParseInt(id)
-	err := picture.Delete()
+	tempPad := model.Pad{Picture: model.Picture{Id: ParseInt(id)}}
+	exist, err := tempPad.Exist()
 	PanicIf(err)
-	ctx.Set("success", true)
-	ctx.JSON(200, ctx.Response)
+	if exist {
+		ctx.Set("success", false)
+		ctx.Set("message", "This picture is using.")
+		Log.Debug("This picture is using.")
+		ctx.JSON(200, ctx.Response)
+	} else {
+		err := picture.Delete()
+		PanicIf(err)
+		ctx.Set("success", true)
+		ctx.JSON(200, ctx.Response)
+	}
 }
 
 func DeletePictures(ctx *middleware.Context) {

@@ -51,7 +51,7 @@ func (self *Picture) Delete() error {
 }
 
 func (self *Picture) DeletePictures(array []int) error {
-	_, err := orm.In("id", array).Delete(&Picture{})
+	_, err := orm.In("id", array).Where("id not in (select picture_id from pad)").Delete(&Picture{})
 	Log.Info("Pictures: ", array, " deleted")
 	return err
 }
