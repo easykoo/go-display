@@ -8,6 +8,7 @@ import (
 	"github.com/easykoo/go-display/model"
 
 	"encoding/json"
+	"fmt"
 	"io"
 	"os"
 	"strings"
@@ -88,20 +89,14 @@ func DeletePicture(ctx *middleware.Context, params martini.Params) {
 	id := params["id"]
 	picture := new(model.Picture)
 	picture.Id = ParseInt(id)
-	tempPad := model.Pad{Picture: model.Picture{Id: ParseInt(id)}}
-	exist, err := tempPad.Exist()
-	PanicIf(err)
-	if exist {
+	err := picture.Delete()
+	if err != nil {
 		ctx.Set("success", false)
-		ctx.Set("message", "This picture is using.")
-		Log.Debug("This picture is using.")
-		ctx.JSON(200, ctx.Response)
+		ctx.Set("message", fmt.Sprint(err))
 	} else {
-		err := picture.Delete()
-		PanicIf(err)
 		ctx.Set("success", true)
-		ctx.JSON(200, ctx.Response)
 	}
+	ctx.JSON(200, ctx.Response)
 }
 
 func DeletePictures(ctx *middleware.Context) {

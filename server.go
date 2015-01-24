@@ -139,7 +139,8 @@ func main() {
 		r.Any("/delete/:id", AuthRequest(Module_Picture), handler.DeletePad)
 		r.Any("/edit/:id", AuthRequest(Module_Picture), handler.EditPadView)
 		r.Any("/edit", AuthRequest(Module_Picture), binding.Bind(model.Pad{}), handler.EditPad)
-		r.Any("/choosePicture", AuthRequest(Module_Picture), handler.ChoosePicture)
+		r.Any("/choosePicture", AuthRequest(Module_Picture), binding.Bind(model.Pad{}), handler.ChoosePicture)
+		r.Any("/choosePicture/:id", AuthRequest(Module_Picture), handler.ChoosePictureView)
 		r.Any("/:name/info", handler.Info)
 	})
 

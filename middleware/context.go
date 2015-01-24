@@ -1,9 +1,9 @@
 package middleware
 
 import (
+	"github.com/easykoo/binding"
 	"github.com/easykoo/sessions"
 	"github.com/go-martini/martini"
-	"github.com/easykoo/binding"
 	"github.com/martini-contrib/render"
 
 	. "github.com/easykoo/go-display/common"
@@ -22,7 +22,6 @@ type Context struct {
 	Messages []string
 	Errors   []string
 	Response map[string]interface{}
-	DbUtil   *model.DbUtil
 }
 
 func (self *Context) init() {
@@ -156,7 +155,6 @@ func InitContext() martini.Handler {
 			R:      r,
 			C:      c,
 			S:      s,
-			DbUtil: &model.DbUtil{},
 		}
 
 		lang := s.Get("Lang")

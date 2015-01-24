@@ -5,9 +5,12 @@ import (
 
 	. "github.com/easykoo/go-display/common"
 
+	"errors"
 	"net/http"
 	"time"
 )
+
+var RelateErr = errors.New("此图片正在使用中!")
 
 type Picture struct {
 	Id          int       `form:"pictureId" xorm:"int(11) pk not null autoincr"`
@@ -45,13 +48,19 @@ func (self *Picture) Update() error {
 }
 
 func (self *Picture) Delete() error {
+	if exist, err := orm.Get(&PadPicture{PictureId: self.Id}); exist {
+		if err != nil {
+			return err
+		}
+		return RelateErr
+	}
 	_, err := orm.Delete(self)
 	Log.Info("Picture ", self.Name, " deleted")
 	return err
 }
 
 func (self *Picture) DeletePictures(array []int) error {
-	_, err := orm.In("id", array).Where("id not in (select picture_id from pad)").Delete(&Picture{})
+	_, err := orm.In("id", array).Where("id not in (select picture_id from pad_picture)").Delete(&Picture{})
 	Log.Info("Pictures: ", array, " deleted")
 	return err
 }
@@ -67,6 +76,12 @@ func (self *Picture) SearchByPage() ([]Picture, int64, error) {
 	var pictures []Picture
 	err = orm.OrderBy(self.GetSortProperties()[0].Column+" "+self.GetSortProperties()[0].Direction).Limit(self.GetPageSize(), self.GetDisplayStart()).Find(&pictures, self)
 	return pictures, total, err
+}
+
+func (self *Picture) ArrayInfo(array string) ([]Picture, error) {
+	var pictures []Picture
+	err := orm.Where("id in ("+array+")").Find(&pictures, Picture{})
+	return pictures, err
 }
 
 func (picture Picture) Validate(errors *binding.Errors, r *http.Request) {

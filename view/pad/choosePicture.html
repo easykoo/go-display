@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="keywords" content="{{.Session.Settings.Keywords}}">
+    <meta name="description" content="{{.Session.Settings.Description}}">
+    <link rel="shortcut icon" href="/img/favicon.ico">
+
+    <title>{{tsl .Session.Lang "label.choose.picture"}} - {{.Session.Settings.AppName}}</title>
+
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/css/font-awesome.min.css" rel="stylesheet">
+    <link href="/css/dataTables.bootstrap.css" rel="stylesheet">
+    <link href="/css/admin.css" rel="stylesheet">
+
+<style>
+img{ border:0; max-width:100%;height:auto; }
+#waterfall{ text-align:center; display: inline-block;}
+#waterfall .cell{ padding:5px 5px 0; border:1px solid #E3E3E3; background:#F5F5F5; margin-top:10px; display: inline-block;}
+
+#waterfall .chosen{ padding:5px 5px 0; border:1px solid #E3E3E3; background:#5CB85C; margin-top:10px; display: inline-block;}
+
+#waterfall p{ line-height:20px; margin-top:5px}
+</style>
+    <!--[if lt IE 9]>
+    <script src="/js/html5shiv.min.js"></script>
+    <script src="/js/respond.min.js"></script>
+    <![endif]-->
+
+    <script src="/js/jquery-1.10.2.min.js"></script>
+	<script src="/js/jquery.waterfall.js"></script>
+</head>
+
+<body>
+<div id="wrapper">
+    {{template "layout/nav" .}}
+    {{template "layout/left" .}}
+
+    <div id="page-wrapper">
+        <div class="row">
+            <div class="col-lg-12">
+                <h1 class="page-header">
+                    {{tsl .Session.Lang "label.choose.picture"}}
+                </h1>
+            </div>
+				
+            <!-- /.col-lg-12 -->
+        </div>
+        {{template "layout/message" .}}
+        <div class="row">
+            <div class="col-lg-12">
+                <form id="padForm" role="form" class="form-horizontal" method="post"
+                      enctype="multipart/form-data" action="/pad/choosePicture" >
+               		<input type="text" name="padId" value="{{.Response.Pad.Id}}" hidden>
+                  	<input type="text" name="version" value="{{.Response.Pad.Version}}" hidden>
+                  	<input id="pictureStr" type="text" name="pictureStr" value="" hidden>
+	               <div class="form-group">
+	                 <div class="col-sm-2">
+	                     <button type="submit" class="btn btn-success btn-block">
+	                         {{tsl .Session.Lang "label.submit"}}
+	                     </button>
+						</div>
+	                 <div class="col-sm-2">
+	                     <a class="btn btn-default btn-block" href="/pad">
+	                         {{tsl .Session.Lang "label.cancel"}}
+	                     </a>
+	                   </div>
+	                 </div>
+	               </div>
+	
+	               <div class="form-group">
+	                 <div class="col-sm-12">
+	                     <div id="waterfall" style="text-align:center">
+	                   </div>
+	                 </div>
+	               </div>
+				</form>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Core Scripts - Include with every page -->
+<script src="/js/bootstrap.min.js"></script>
+<script src="/js/jquery.upload.js"></script>
+<script src="/js/jquery.validate.min.js"></script>
+<script src="/js/jquery.validate.method.js"></script>
+<script src="/js/jquery.metisMenu.js"></script>
+<script src="/js/bootbox.min.js"></script>
+<script src="/js/jquery.json.js"></script>
+<script src="/js/admin.js"></script>
+<script src="/js/easykoo.js"></script>
+
+
+<script type="text/javascript">
+
+    $(document).ready(function () {
+	var originPictures = "{{range .Response.Pad.Pictures}}{{.Id}},{{end}}";
+	var originPictureArray = originPictures.split(",");
+	
+    $.ajax('/picture', {
+        dataType: 'json',
+        type: "POST",
+        data: {
+            iSortCol_0: "0",
+            mDataProp_0: "id",
+            sSortDir_0: "asc"
+        },
+        success: function (data) {
+         var html = ""
+		//alert($.inArray("4", originPictureArray))
+        $.each(data.aaData, function (index, obj) {
+			var clazz = ($.inArray(obj.Id.toString(), originPictureArray) == -1)? "cell":"cell chosen";
+			
+        	html += '<div class="' + clazz +'"><img id="'+obj.Id+'" src="'+obj.Url+'" /><p>'+obj.Name+'</p></div>';
+        });
+
+        $('#waterfall').html(html);
+
+        $('.cell').bind('click',function(){
+          if ($(this).attr("class") == "cell chosen") {
+            $(this).css("background", "#F5F5F5")
+            $(this).attr("class", "cell")
+          } else {
+            $(this).css("background", "#5CB85C")
+            $(this).attr("class", "cell chosen")
+          }
+			var pictureStr = ""
+			$('.cell').each(function(){
+				if ($(this).attr("class") == "cell chosen") {
+					pictureStr += $(this).children("img").attr("id") +",";
+				}
+			})
+			if (pictureStr.endWith(',')) {
+				pictureStr = pictureStr.substring(0, pictureStr.length - 1)
+			}
+			$("#pictureStr").val(pictureStr);
+        });
+        $('#waterfall').waterfall(opt);
+
+        }
+    });
+		
+		var opt={
+  			getResource:function(index,render){
+	  		var html='';
+        /*
+        $.ajax('/picture', {
+            dataType: 'json',
+            type: "POST",
+            data: {
+                iSortCol_0: "0",
+                mDataProp_0: "id",
+                sSortDir_0: "asc"
+            },
+            success: function (data) {
+             var html = ""
+            $.each(data.aaData, function (index, obj) {
+            html += '<div class="cell"><img src="'+obj.Url+'" /><p>'+obj.Id+'</p></div>';
+            });
+            // render($(html));
+            }
+
+        });
+      */
+	  	return $(html);
+  		},
+  		auto_imgHeight:true,
+  		insert_type:1
+		}
+		$('#waterfall').waterfall(opt);
+		
+		
+        $('#pad').toggleClass('active').children('ul').collapse('toggle');
+        $('#changePad').css({"background": "#DDDDDD"});
+		
+        $("#padForm").validate({
+            rules: {
+                name: {
+                    required: true
+                }
+            },
+            focusInvalid: true,
+            onkeyup: false,
+            errorClass: "error",
+            errorPlacement: function (error, element) {
+                error.appendTo(element.parent("div").next("div"));
+            },
+            highlight: function (element, errorClass) {
+                $(element).parent("div").parent("div").addClass("has-error").removeClass("has-success");
+            },
+            success: function (label) {
+                label.parent("div").parent("div").removeClass("has-error").addClass("has-success");
+            },
+            submitHandler: function (form) {
+                form.submit();
+                return false;
+            }
+        });
+		
+		
+		/*
+        $('#submit').bind('click',function(){
+			var pictureArray = new Array();
+			$('.cell').each(function(){
+				if ($(this).attr("class") == "cell chosen") {
+					pictureArray.push($(this).children("img").attr("id"))
+				}
+			})
+			if (pictureArray.length > 0) {
+				$.ajax({
+                        //dataType: "json",
+                        type: "POST",
+                        url: '/pad/choosePicture',
+                        data: {Pad:{
+							Id: $("#padId").val(),
+							Version: $("#version").val(),
+							Pictures: $.toJSON(pictureArray),
+	}
+						},
+                        success: function (data) {
+                            if (!data.success) {
+                                bootbox.alert(data.message, null);
+                            }
+                        }
+                    });
+			} else {
+        		bootbox.alert('{{tsl .Session.Lang "message.error.please.select"}}', null);
+        		return;
+			}
+        });
+		*/
+    })
+</script>
+</body>
+</html>

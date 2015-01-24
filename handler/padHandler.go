@@ -8,6 +8,7 @@ import (
 	"github.com/easykoo/go-display/model"
 
 	"encoding/json"
+	"strings"
 )
 
 func Pad(ctx *middleware.Context) {
@@ -79,15 +80,27 @@ func DeletePads(ctx *middleware.Context) {
 	ctx.JSON(200, ctx.Response)
 }
 
-func ChoosePicture(ctx *middleware.Context) {
-	pictureId := ctx.R.FormValue("pictureId")
-	padArray := ctx.R.FormValue("padArray")
-	var res []int
-	json.Unmarshal([]byte(padArray), &res)
-	err := (&model.Pad{}).ChoosePicture1(res, ParseInt(pictureId))
+func ChoosePicture(ctx *middleware.Context, pad model.Pad) {
+	if pad.PictureStr != "" {
+		var pictureIds []string
+		pictureIds = strings.Split(pad.PictureStr, ",")
+		for _, pictureId := range pictureIds {
+			pad.Pictures = append(pad.Pictures, model.Picture{Id: ParseInt(pictureId)})
+		}
+	}
+	err := pad.UpdatePictures()
 	PanicIf(err)
-	ctx.Set("success", true)
-	ctx.JSON(200, ctx.Response)
+	ctx.Redirect("/pad")
+}
+
+func ChoosePictureView(ctx *middleware.Context, params martini.Params) {
+	id := params["id"]
+	pad := new(model.Pad)
+	pad.Id = ParseInt(id)
+	pic, err := pad.GetById()
+	PanicIf(err)
+	ctx.Set("Pad", pic)
+	ctx.HTML(200, "pad/choosePicture", ctx)
 }
 
 func Info(ctx *middleware.Context, params martini.Params) {

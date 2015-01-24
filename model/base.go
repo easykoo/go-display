@@ -17,14 +17,11 @@ func Exist(filename string) bool {
 	return err == nil || os.IsExist(err)
 }
 
-func newQlEngine() (*xorm.Engine, error) {
-	if !Exist("./ql.db") {
-		os.Remove("./ql.db")
-	}
-	return xorm.NewEngine("ql", "./ql.db")
-}
-
 func InitDB() {
+	if exist, _ := orm.IsTableExist(&PadPicture{}); !exist {
+		orm.DropTables(&Pad{}, &Picture{})
+	}
+
 	if exist, _ := orm.IsTableExist(&Module{}); !exist {
 		orm.CreateTables(&Module{})
 		orm.InsertOne(&Module{Id: 1, Description: "Admin"})
@@ -71,6 +68,9 @@ func InitDB() {
 	if exist, _ := orm.IsTableExist(&Picture{}); !exist {
 		orm.CreateTables(&Picture{})
 	}
+	if exist, _ := orm.IsTableExist(&PadPicture{}); !exist {
+		orm.CreateTables(&PadPicture{})
+	}
 }
 
 func SetEngine() *xorm.Engine {
@@ -89,5 +89,3 @@ func SetEngine() *xorm.Engine {
 	Log.Info("db initialized...")
 	return orm
 }
-
-type DbUtil struct{}

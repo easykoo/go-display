@@ -44,9 +44,6 @@
                             {{tsl .Session.Lang "label.delete"}}</a>
                         <a class="btn btn-success" href="/pad/new"><i class="fa fa-edit fa-fw"></i>
                             {{tsl .Session.Lang "label.new"}}</a>
-                        <a class="btn btn-success" href="javascript:choosePicture()"><i
-                                class="fa fa-picture-o fa-fw"></i>
-                            {{tsl .Session.Lang "label.choose.picture"}}</a>
                     </div>
                     <!-- /.panel-heading -->
                     <div class="panel-body">
@@ -57,8 +54,9 @@
                                     <th><input type="checkbox" onchange='selectAll(this)' id="selectAll"/></th>
                                     <th>{{tsl .Session.Lang "label.id"}}</th>
                                     <th>{{tsl .Session.Lang "label.name"}}</th>
-                                    <th>{{tsl .Session.Lang "label.image"}}</th>
                                     <th>{{tsl .Session.Lang "label.description"}}</th>
+                                    <th>{{tsl .Session.Lang "label.interval"}}</th>
+                                    <th>{{tsl .Session.Lang "label.image"}}</th>
                                     <!--<th>{{tsl .Session.Lang "label.create.date"}}</th>-->
                                     <th>{{tsl .Session.Lang "label.actions"}}</th>
                                 </tr>
@@ -123,90 +121,6 @@ function deletePad(padId) {
         }
     });
 }
-
-var showPicture = function (data) {
-    var html = '<div id="myCarousel" class="carousel slide" data-ride="carousel">'
-            + '<ol class="carousel-indicators">';
-
-    $.each(data.aaData, function (index, obj) {
-        if (index == 0) {
-            html += '<li data-target="#myCarousel" data-slide-to="0" class="active"></li>';
-        } else {
-            html += '<li data-target="#myCarousel" data-slide-to="' + index + '"></li>';
-        }
-    });
-    html += '</ol>'
-            + '<div class="carousel-inner">';
-
-    $.each(data.aaData, function (index, obj) {
-        if (index == 0) {
-            html += '<div class="item active" style="align:center">';
-        } else {
-            html += '<div class="item">';
-        }
-        html += '<img src="' + obj.Url + '" style="cursor:pointer" onclick="select('+obj.Id+')"> '
-                + '</div>'
-
-    });
-    html += '</div>'
-            + '<a class="left carousel-control" href="#myCarousel" data-slide="prev">'
-            + '<span class="glyphicon glyphicon-chevron-left"></span>'
-            + '</a>'
-            + '<a class="right carousel-control" href="#myCarousel" data-slide="next">'
-            + '<span class="glyphicon glyphicon-chevron-right"></span>'
-            + '</a>'
-            + '</div>'
-
-    $('#myCarousel').carousel();
-    box = bootbox.dialog({
-        title: '<spring:message code="label.choose.choose" />',
-        message: html,
-        buttons: null
-    });
-}
-var select = function (id) {
-    $.ajax({
-        dataType: "json",
-        type: "POST",
-        url: '/pad/choosePicture',
-        data: {
-            padArray: $.toJSON(padArray),
-            pictureId: id
-        },
-        traditional: true,
-        success: function (data) {
-            if (!data.success) {
-                bootbox.alert(data.message, null);
-            }
-            $('.bootbox-close-button').click()
-            unSelectAll();
-            padArray = [];
-            padTable.fnClearTable(0);
-            padTable.fnDraw();
-        }
-    });
-}
-
-var choosePicture = function () {
-    if (padArray.length <= 0) {
-        bootbox.alert('{{tsl .Session.Lang "message.error.please.select"}}', null);
-        return;
-    }
-
-    $.ajax('/picture', {
-        dataType: 'json',
-        type: "POST",
-        data: {
-            iSortCol_0: "0",
-            mDataProp_0: "id",
-            sSortDir_0: "asc"
-        },
-        success: function (data) {
-            showPicture(data)
-        }
-    });
-
-};
 
 var padArray = [];
 
@@ -278,13 +192,14 @@ var getAllPad = function () {
             },
             {"mData": "Id", "sWidth": 30},
             { "mData": "Name", "sWidth": 80},
-            { "mData": "picture_id",
-                "sWidth": 150
-            },
             { "mData": "Description",
                 "mRender": function (mData) {
                     return mData.length <= 50 ? mData : (mData.substr(0, 50) + '... ')
                 },
+                "sWidth": 150
+            },
+            { "mData": "Interval", "sWidth": 80},
+            { "mData": "Pictures",
                 "sWidth": 300
             },
             /*{ "mData": "CreateDate",
@@ -296,32 +211,38 @@ var getAllPad = function () {
             { "mData": "Id", "sWidth": 70}
         ],
         "fnRowCallback": function (nRow, aData, iDisplayIndex) {
-			var img;
-			if (aData.picture_id.Url!=""){
-            	img = '<img onclick="selectOne(' + aData.Id + ')" style="height:100px; cursor:pointer" src="' + aData.picture_id.Url + '"/>'
-         	} else {
-				img = '<button onclick="selectOne('+aData.Id + ')" class="btn btn-primary">选择图片</button>'
-			}
-			$('td:eq(3)', nRow).html(img);
 			var desc = '<span style="color:'+aData.Color+';';
 			if (aData.Color == 'white'){				
                 desc+='background-color:gray';
 			}
 			desc+='">'+aData.Description+'</span>';
-            $('td:eq(4)', nRow).html(desc);
+            $('td:eq(3)', nRow).html(desc);
 			
-
+			if (aData.Pictures != null) {
+				var html = ""
+				for (var i=0;i < aData.Pictures.length;i++) {
+					html += aData.Pictures[i].Name + ","
+				}
+				if (html.endWith(",")) {
+					html = html.substring(0, html.length-1)
+					$('td:eq(5)', nRow).html('<a href="/pad/choosePicture/' + aData.Id + '">'+html+'</a>');
+				}
+			}
+			
             var html = '<div class="btn-group"><a class="btn btn-primary" href="javascript:"><i class="fa fa-gavel fa-fw"></i></a>' +
                     '<a class="btn btn-primary dropdown-toggle" data-toggle="dropdown" href="javascript:"><span class="fa fa-caret-down"></span></a>' +
                     '<ul class="dropdown-menu">' +
                     '<li><a href="javascript:deletePad(' + aData.Id + ')"><i class="fa fa-trash-o fa-fw"></i>'
                     + '<strong> {{tsl .Session.Lang "label.delete"}}</strong>'
                     + '</a></li>';
-            html += '<li><a href="/pad/edit/' + aData.Id + '"><i class="fa fa-eye fa-fw"></i>'
+            html += '<li><a href="/pad/edit/' + aData.Id + '"><i class="fa fa-edit fa-fw"></i>'
                     + '<strong> {{tsl .Session.Lang "label.edit"}}</strong>'
                     + '</a></li>';
+            html += '<li><a href="/pad/choosePicture/' + aData.Id + '"><i class="fa fa-edit fa-fw"></i>'
+                    + '<strong> {{tsl .Session.Lang "label.choose.picture"}}</strong>'
+                    + '</a></li>';
             html += '</ul></div>';
-            $('td:eq(5)', nRow).html(html);
+            $('td:eq(6)', nRow).html(html);
 
             if (aData.Viewed) {
                 $(nRow).css({"color": "#BBBBBB"})

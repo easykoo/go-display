@@ -10,9 +10,12 @@ import (
 )
 
 type Pad struct {
-	Id          int       `form:"padId" xorm:"int(11) pk not null autoincr"`
-	Name        string    `form:"name" xorm:"varchar(20) not null"`
-	Picture     Picture   `json:"picture_id" xorm:"picture_id int(11) default null"`
+	Id         int       `form:"padId" xorm:"int(11) pk not null autoincr"`
+	Name       string    `form:"name" xorm:"varchar(20) not null"`
+	PictureStr string    `form:"pictureStr" xorm:"-"`
+	Pictures   []Picture `xorm:"-"`
+	//PictureArray []Picture `json:"pictureArray" xorm:"-"`
+	Interval    int       `form:"interval", xorm:"int(1) default 5"`
 	Color       string    `form:"color" xorm:"varchar(20) not null"`
 	Description string    `form:"description" xorm:"varchar(100) not null"`
 	CreateUser  string    `xorm:"varchar(20) default 'SYSTEM'"`
@@ -23,6 +26,11 @@ type Pad struct {
 	Page        `xorm:"-"`
 }
 
+type PadPicture struct {
+	PadId     int `xorm:"int(11) not null "`
+	PictureId int `xorm:"int(11) not null "`
+}
+
 func (self *Pad) Exist() (bool, error) {
 	return orm.Get(self)
 }
@@ -30,6 +38,7 @@ func (self *Pad) Exist() (bool, error) {
 func (self *Pad) GetById() (*Pad, error) {
 	pad := &Pad{}
 	_, err := orm.Id(self.Id).Get(pad)
+	pad.LoadPictures()
 	return pad, err
 }
 func (self *Pad) Get() (*Pad, error) {
@@ -37,6 +46,7 @@ func (self *Pad) Get() (*Pad, error) {
 	if !exist {
 		return nil, err
 	}
+	self.LoadPictures()
 	return self, err
 }
 
@@ -52,14 +62,31 @@ func (self *Pad) Update() error {
 	return err
 }
 
+func (self *Pad) UpdatePictures() error {
+	session := orm.NewSession()
+	defer session.Close()
+	_, err := session.Exec("delete from pad_picture where pad_id = ?", self.Id)
+	for key, _ := range self.Pictures {
+		session.Insert(PadPicture{PadId: self.Id, PictureId: self.Pictures[key].Id})
+	}
+	Log.Info("Pad", self.Id, " pictures updated!")
+	return err
+}
+
 func (self *Pad) Delete() error {
-	_, err := orm.Delete(self)
+	session := orm.NewSession()
+	defer session.Close()
+	_, err := session.Delete(self)
+	_, err = session.Exec("delete from pad_picture where pad_id = ?", self.Id)
 	Log.Info("Pad ", self.Name, " deleted")
 	return err
 }
 
 func (self *Pad) DeletePads(array []int) error {
-	_, err := orm.In("id", array).Delete(&Pad{})
+	session := orm.NewSession()
+	defer session.Close()
+	_, err := session.In("id", array).Delete(&Pad{})
+	_, err = session.In("pad_id", array).Delete(&PadPicture{})
 	Log.Info("Pads: ", array, " deleted")
 	return err
 }
@@ -70,10 +97,24 @@ func (self *Pad) SelectAll() ([]Pad, error) {
 	return pads, err
 }
 
+func BatchLoadPictures(pads []Pad) {
+	for key, _ := range pads {
+		pads[key].LoadPictures()
+	}
+}
+
+func (self *Pad) LoadPictures() {
+	var pictures []Picture
+	err := orm.Join("LEFT", "pad_picture", "picture.id=pad_picture.picture_id").Where("pad_picture.pad_id=?", self.Id).Find(&pictures, &Picture{})
+	PanicIf(err)
+	self.Pictures = pictures
+}
+
 func (self *Pad) SearchByPage() ([]Pad, int64, error) {
 	total, err := orm.Count(self)
 	var pads []Pad
 	err = orm.OrderBy(self.GetSortProperties()[0].Column+" "+self.GetSortProperties()[0].Direction).Limit(self.GetPageSize(), self.GetDisplayStart()).Find(&pads, self)
+	BatchLoadPictures(pads)
 	return pads, total, err
 }
 
@@ -81,24 +122,4 @@ func (pad Pad) Validate(errors *binding.Errors, r *http.Request) {
 	if len(pad.Name) > 20 {
 		errors.Fields["name"] = "Length of name should be less than 20."
 	}
-}
-
-func (self *Pad) ChoosePicture(padArray []Pad) error {
-	_, err := orm.Update(padArray)
-	Log.Info("Pads: ", " updated")
-	return err
-}
-
-func (self *Pad) ChoosePicture1(array []int, pictureId int) error {
-	sql := "update pad set picture_id =" + IntString(pictureId) + " where id in ("
-	for i := 0; i < len(array); i++ {
-		sql += IntString(array[i])
-		if i < len(array)-1 {
-			sql += ","
-		}
-	}
-	sql += ")"
-	_, err := orm.Exec(sql)
-	Log.Info("Pads: ", " updated")
-	return err
 }
