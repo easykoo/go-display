@@ -1,8 +1,8 @@
 package model
 
 import (
-	_ "github.com/go-sql-driver/mysql"
 	"github.com/go-xorm/xorm"
+	_ "github.com/mattn/go-sqlite3"
 
 	. "github.com/easykoo/go-display/common"
 
@@ -17,8 +17,25 @@ func Exist(filename string) bool {
 	return err == nil || os.IsExist(err)
 }
 
+func SetEngine() *xorm.Engine {
+	Log.Info("db initializing...")
+	var err error
+	orm, err = xorm.NewEngine("sqlite3", "./.db")
+	PanicIf(err)
+	orm.TZLocation = time.Local
+	orm.ShowSQL = Cfg.MustBool("db", "show_sql", false)
+	orm.Logger = xorm.NewSimpleLogger(Log.GetWriter())
+	InitDB()
+	Log.Info("db initialized...")
+	return orm
+}
+
 func InitDB() {
-	if exist, _ := orm.IsTableExist(&PadPicture{}); !exist {
+	if orm == nil {
+		Log.Err("db not exists")
+	}
+
+	if exist, _ := orm.IsTableExist(&Pad{}); !exist {
 		orm.DropTables(&Pad{}, &Picture{})
 	}
 
@@ -71,21 +88,4 @@ func InitDB() {
 	if exist, _ := orm.IsTableExist(&PadPicture{}); !exist {
 		orm.CreateTables(&PadPicture{})
 	}
-}
-
-func SetEngine() *xorm.Engine {
-	Log.Info("db initializing...")
-	var err error
-	server := Cfg.MustValue("db", "server", "127.0.0.1")
-	username := Cfg.MustValue("db", "username", "root")
-	password := Cfg.MustValue("db", "password", "pass")
-	dbName := Cfg.MustValue("db", "db_name", "go_display")
-	orm, err = xorm.NewEngine("mysql", username+":"+password+"@tcp("+server+":3306)/"+dbName+"?charset=utf8")
-	PanicIf(err)
-	orm.TZLocation = time.Local
-	orm.ShowSQL = Cfg.MustBool("db", "show_sql", false)
-	orm.Logger = xorm.NewSimpleLogger(Log.GetWriter())
-	InitDB()
-	Log.Info("db initialized...")
-	return orm
 }
